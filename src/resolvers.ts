@@ -1,56 +1,70 @@
-import fs from "fs";
-import { GraphQLID, GraphQLObjectType, GraphQLString } from "graphql";
 import Task from "./models/Task.js";
 import User from "./models/User.js";
 
-let db = JSON.parse(fs.readFileSync("_db.json", "utf8"));
-
-const TaskType = new GraphQLObjectType({
-  name: "Task",
-  fields: () => ({
-    id: { type: GraphQLID },
-    title: { type: GraphQLString },
-  }),
-});
-
 export default {
   Query: {
-    tasks() {
-      return db.tasks;
-      //   return Task.find();
+    async task(parent, { id }, context) {
+      return await Task.findById(id);
     },
-    task(parent, args, context) {
-      return db.tasks.find(({ id }) => id === args.id);
-    //   return Task.findById(args.id);
+    async tasks() {
+      return await Task.find();
+    },
+    async user(parent, { id }, context) {
+      return await User.findById(id);
+    },
+    async users() {
+      return await User.find();
     },
   },
   Mutation: {
-    deleteTask(_, args) {
-      db.tasks = db.tasks.filter((g) => g.id !== args.id);
-      fs.writeFileSync("_db.json", JSON.stringify(db, null, 4));
-
-      return db.tasks;
-    },
-    addTask(_, { task }) {
-      let newTask = {
-        id: Math.floor(Math.random() * 10000).toString(),
+    async addTask(parent, { task }) {
+      const newTask = new Task({
         title: task.title,
-        platform: task.platform,
-      };
-      db.tasks.push(newTask);
-      fs.writeFileSync("_db.json", JSON.stringify(db, null, 4));
+      });
+
+      await newTask.save();
 
       return newTask;
     },
-    updateTask(_, { id, edits }) {
-      let task = db.tasks.find((g) => g.id === id);
-      if (edits.title) {
-        task.title = edits.title;
-      }
-      if (edits.platform) {
-        task.platform = edits.platform;
-      }
-      fs.writeFileSync("_db.json", JSON.stringify(db, null, 4));
+    async createUser(parent, { email, password }) {
+      const newUser = new User({
+        email,
+        password
+      })
+
+      await newUser.save()
+
+      return newUser
+    },
+    async deleteTask(parent, { id }) {
+      return await Task.findByIdAndDelete(id);
+    },
+    async updateTask(parent, { id, edits }) {
+      const task = await Task.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            ...(edits.title && { title: edits.title }),
+          },
+        },
+        { new: true }
+      );
+
+      return task;
+    },
+    async updateUser(parent, { id, edits }) {
+      const task = await Task.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            ...(edits.name && { name: edits.name }),
+            ...(edits.email && { email: edits.email }),
+            ...(edits.password && { password: edits.password }),
+            ...(edits.verified && { verified: edits.verified }),
+          },
+        },
+        { new: true }
+      );
 
       return task;
     },
