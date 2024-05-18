@@ -1,16 +1,18 @@
 export default `#graphql
 type Query {
+  task(id: ID!): Task!
   tasks: [Task!]!
-  task(id: ID!): Task
+  user(id: ID!): User!
   users: [User!]!
-  user(id: ID!): User
 }
 
 type Mutation {
   addTask(task: AddTaskInput): Task
-  createUser(user: CreateUserInput): User
+  createUser(user: CreateUserInput): UserWithToken
   deleteTask(id: ID!): Task
+  login(email: String!, password: String!): UserWithToken
   updateTask(id: ID!, edits: UpdateTaskInput): Task
+  updateUser(id: ID!, edits: UpdateUserInput): User
 }
 
 type Task {
@@ -21,7 +23,15 @@ type Task {
 type User {
   id: ID!
   email: String!
-  password: String!
+  name: String!
+  verified: Boolean!
+}
+
+type UserWithToken {
+  email: String!
+  name: String!
+  verified: Boolean!
+  jwt: String
 }
 
 input AddTaskInput {
@@ -36,4 +46,9 @@ input CreateUserInput {
 input UpdateTaskInput {
   title: String
 }
-`
+
+input UpdateUserInput {
+  name: String
+  email: String
+}
+`;
