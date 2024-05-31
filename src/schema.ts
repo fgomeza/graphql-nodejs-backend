@@ -4,6 +4,7 @@ type Query {
   tasks: [Task!]!
   user(id: ID!): User!
   users: [User!]!
+  tipoDeCambio: TipoDeCambio!
 }
 
 type Mutation {
@@ -28,10 +29,16 @@ type User {
 }
 
 type UserWithToken {
+  id: ID!
   email: String!
   name: String!
   verified: Boolean!
-  jwt: String
+  accessToken: String
+}
+
+type TipoDeCambio {
+  compra: Float!
+  venta: Float!
 }
 
 input AddTaskInput {

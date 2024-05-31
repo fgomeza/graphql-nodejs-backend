@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import Task from "./mongooseModels/Task.js";
 import User from "./mongooseModels/User.js";
+import axios from "axios";
 
 export default {
   Query: {
@@ -15,6 +16,12 @@ export default {
     },
     async users(parent) {
       return await User.find();
+    },
+    async tipoDeCambio(parent) {
+      const { data } = await axios.get(
+        "https://tipodecambio.paginasweb.cr/api"
+      );
+      return data;
     },
   },
   Mutation: {
@@ -45,6 +52,7 @@ export default {
         const user1 = { ...user };
 
         const userToTokenize = {
+          id: user.id,
           email: user.email,
           name: user.name,
           verified: user.verified,
@@ -56,7 +64,7 @@ export default {
 
         return {
           ...userToTokenize,
-          jwt: token,
+          accessToken: token,
         };
       }
     },
@@ -83,6 +91,7 @@ export default {
 
       if (user) {
         const userToTokenize = {
+          id: user.id,
           email: user.email,
           name: user.name,
           verified: user.verified,
@@ -94,7 +103,7 @@ export default {
 
         return {
           ...userToTokenize,
-          jwt: token,
+          accessToken: token,
         };
       }
 
